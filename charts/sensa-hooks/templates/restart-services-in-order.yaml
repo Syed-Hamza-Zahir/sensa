@@ -1,0 +1,73 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sensa-admin-role
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "6"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+rules:
+- apiGroups: [""]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sensa-admin-sa
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "6"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sensa-admin-rolebinding
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "6"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+subjects:
+- kind: ServiceAccount
+  name: sensa-admin-sa
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: sensa-admin-role
+  apiGroup: ""
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: restart-services-in-order
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "7"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  template:
+    metadata:
+      name: restart-services-in-order
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: sensa-admin-sa
+      containers:
+        - name: hyperkube
+          image: "{{ .Values.hyperkubeRepository }}:{{ .Values.hyperkubeTag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          env:
+            - name: NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+          command:
+          - /bin/bash
+          - /scripts/restart-services-in-order.sh
+
+      restartPolicy: OnFailure
+---

@@ -1,0 +1,129 @@
+{{- $root := . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "web.fullname" . }}
+  labels:
+    {{- include "web.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "web.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "web.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "web.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: sensasecrets-volume
+              mountPath: /sensasecrets-volume
+            - name: https-certs
+              mountPath: /certs
+              readOnly: true
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: SENSA_API_DOCS
+              value: "{{ .Values.global.SENSA_API_DOCS }}"
+            - name: SENSA_API_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_API_KEY_SECRET
+            - name: SENSA_API_URL
+              value: https://{{ .Values.global.SENSA_WEB_HOST }}:{{ .Values.global.sslPort }}
+            - name: SENSA_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_DB_URL
+            - name: SENSA_ENCRYPTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_ENCRYPTION_SECRET
+            - name: SENSA_JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_JWT_ACCESS_SECRET
+            - name: SENSA_JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_JWT_REFRESH_SECRET
+            - name: SENSA_KAFKA_URL
+              value: {{ .Values.global.SENSA_KAFKA_URL }}
+            - name: SENSA_KUBEFLOW_URL
+              value: {{ .Values.global.SENSA_KUBEFLOW_URL }}
+            - name: SENSA_LOADER_URL
+              value: {{ .Values.global.SENSA_LOADER_URL }}
+            - name: SENSA_PROMETHEUS_URL
+              value: {{ .Values.global.SENSA_PROMETHEUS_URL }}
+            - name: SENSA_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_REDIS_URL
+            - name: SENSA_S3_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_S3_URL
+            - name: SENSA_WEB_URL
+              value: https://{{ .Values.global.SENSA_WEB_HOST }}:{{ .Values.global.sslPort }}
+            - name: NODE_ENV
+              value: {{ .Values.global.NODE_ENV }}
+        {{ if .Values.metrics.enabled }}
+        - name: {{ .Values.sidecar.name }}
+          image: "{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+          ports:
+          - name: {{ .Values.sidecar.name }}
+            containerPort: {{ .Values.sidecar.service.port }}
+          args:
+            - --nginx.scrape-uri=http://localhost:80/stub_status
+        {{- end }}
+      volumes:
+        - name: sensasecrets-volume
+          secret:
+            secretName: sensa-global-secrets
+        - name: https-certs
+          secret:
+            secretName: https-certs
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+

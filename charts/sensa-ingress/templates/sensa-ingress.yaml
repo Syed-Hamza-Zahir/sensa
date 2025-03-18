@@ -1,0 +1,39 @@
+{{- $root := . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sensa-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: "nginx"
+  tls:
+  - hosts:
+    - {{ .Values.global.SENSA_WEB_HOST }}
+    secretName: {{ .Values.global.SSL_SECRETS }}
+  rules:
+  - host: {{ .Values.global.SENSA_WEB_HOST }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/v1"
+        backend:
+          service:
+            name: zeus
+            port:
+              number: 3001
+      - pathType: Prefix
+        path: "/graphql"
+        backend:
+          service:
+            name: zeus
+            port:
+              number: 3001
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: web
+            port:
+              number: 80

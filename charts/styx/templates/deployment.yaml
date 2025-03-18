@@ -1,0 +1,136 @@
+{{- $root := . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "styx.fullname" . }}
+  labels:
+    {{- include "styx.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "styx.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "styx.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "styx.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.SecurityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          {{- if .Values.global.internal_ca }}
+            - name: internalca-volume
+              mountPath: /usr/local/share/ca-certificates
+          {{- end }}
+            - name: sensasecrets-volume
+              mountPath: /sensasecrets-volume
+          ports:
+            - name: styx
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          {{- if .Values.global.internal_ca}}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /usr/local/share/ca-certificates/root.pem
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
+          {{- end }}    
+          {{- if .Values.global.proxy_server }}
+            - name: HTTPS_PROXY
+              value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+            - name: https_proxy
+              value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+            - name: NO_PROXY
+              value: .cluster.local
+            - name: no_proxy
+              value: .cluster.local
+          {{- end }}
+            - name: CONCURRENT_BATCH_LIMIT
+              value: "{{ .Values.global.STYX_CONCURRENT_BATCH_LIMIT }}"
+            - name: SENSA_BATCH_SIZE
+              value: "{{ .Values.global.SENSA_BATCH_SIZE }}"
+            - name: STYX_SENTRY_DSN
+              value: {{ .Values.global.AYASDI_SENTRY_DSN }}
+            - name: STYX_SENTRY_SAMPLE_RATE
+              value: {{ .Values.global.AYASDI_SENTRY_SAMPLE_RATE }}
+            - name: SENSA_REDIS_INDEX
+              value: "{{ .Values.global.REDIS_INDEX_STYX }}"
+            - name: SENSA_RABBIT_MQ_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_RABBIT_MQ_URL
+            {{- if .Values.global.SENSA_RABBIT_MQ_STYX_QUEUE }}
+            - name: SENSA_RABBIT_MQ_DEFAULT_QUEUE
+              value: {{ .Values.global.SENSA_RABBIT_MQ_STYX_QUEUE }}
+            {{- end }}
+            - name: SENSA_API_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_API_KEY_SECRET
+            - name: SENSA_API_URL
+              value: {{ .Values.global.SENSA_API_URL }}
+            - name: SENSA_TRINO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_TRINO_URL
+            - name: SENSA_S3_BUCKET_NAME
+              value: {{ .Values.global.STYX_BUCKET_NAME }}
+            - name: SENSA_S3_OBJECT_NAME
+              value: {{ .Values.global.STYX_OBJECT_NAME }}
+            - name: SENSA_EMAIL
+              value: {{ .Values.global.SENSA_EMAIL }}
+            - name: SENSA_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_REDIS_URL
+            - name: SENSA_S3_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_S3_URL
+            - name: NODE_ENV
+              value: {{ .Values.global.NODE_ENV }}
+      volumes:
+      {{- if .Values.global.internal_ca }}
+        - name: internalca-volume
+          configMap:
+            name: internalca-certs
+      {{- end }}
+        - name: sensasecrets-volume
+          secret:
+            secretName: sensa-global-secrets
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

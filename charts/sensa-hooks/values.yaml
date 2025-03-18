@@ -1,0 +1,2 @@
+hyperkubeRepository: symphonyfs.azurecr.io/symphonysensa/sensa-hyperkube
+imagePullPolicy: IfNotPresent

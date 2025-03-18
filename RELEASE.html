@@ -1,0 +1,416 @@
+<h1>Sensa Helm Chart 1.5.25 Release Notes (2025-01-16)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li><code>styx</code>, <code>web</code>, and <code>zeus</code> have been updated to v4.5.1</li>
+</ul>
+<h3>Fixes</h3>
+<ul>
+<li>Fix reference to non-existing chart versions in <code>charts/sensa/values.yaml</code></li>
+</ul>
+<h3>Internal</h3>
+<ul>
+<li>
+<p>Update chart dependencies to local repository for:</p>
+</li>
+<li>
+<p>hades</p>
+</li>
+<li>hermes</li>
+<li>hive-metastore</li>
+<li>styx</li>
+<li>trino</li>
+<li>web</li>
+<li>wlm</li>
+<li>
+<p>zeus</p>
+</li>
+<li>
+<p>Adjust indentation in <code>charts/sensa/values.yaml</code> to address linting errors</p>
+</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.24 Release Notes (2024-12-10)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>trino has been updated to version 462</li>
+<li>meilisearch has been updated from v1.0.2 to v1.10.3</li>
+<li>styx, web, and zeus have been updated to v4.5.0</li>
+<li>hive-metastore has been updated to v4.5.0</li>
+<li>
+<p>hyperkube has been updated to v4.5.9</p>
+</li>
+<li>
+<p>Update container registry from dockerhub to ACR for:</p>
+</li>
+<li>hades</li>
+<li>hermes</li>
+<li>hive-metastore</li>
+<li>hyperkube</li>
+<li>styx</li>
+<li>web</li>
+<li>wlm</li>
+<li>zeus</li>
+</ul>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Update trino configuration to be compliant with version 462</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>Added hook to delete meilisearch data when upgrading from v1.0.2<sup>1</sup></li>
+</ul>
+<h6>(1) Depends on hook to force meilisearch reindex after upgrades</h6>
+<h1>Sensa Helm Chart 1.5.19 Release Notes (2024-10-03)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>trino has been updated to version 446</li>
+<li>styx, web, and zeus have been updated to v4.4.2</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.18 Release Notes (2024-10-02)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>trino-coordinator has been changed to use trino repo</li>
+<li>trino-coordinator has been changed to version 422</li>
+</ul>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Updated trino to use bitnami jmx-exporter for prometheus metrics</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.15 Release Notes (2024-07-19)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>web has been updated to v4.4.1</li>
+</ul>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Updated meilisearch pvc mount path to ensure data persistence</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>Added hook to force meilisearch reindex after upgrades</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.14 Release Notes (2024-05-20)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>styx, web, and zeus have been updated to v4.4.0</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.13 Release Notes (2024-05-09)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>web has been updated to v4.3.3</li>
+<li>zeus has been updated to v4.3.4</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.11 Release Notes (2024-05-02)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Added ability to setup services to use and accept internal CAs</li>
+<li>Added internal CA parameters to hermes, hades, styx, and zeus deployments</li>
+</ul>
+<h2>Removed features</h2>
+<ul>
+<li>sensajs has been removed</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.7 Release Notes (2024-04-23)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>hades has been updated to v4.3.2</li>
+</ul>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Added ability to set proxy server to environment using proxy_server and proxy_port global values</li>
+<li>Added proxy_server and proxy_port parameters to hades, hermes, styx, and zeus deployments</li>
+<li>Added LOAD_BALANCER_TYPE parameter to global-values.yaml</li>
+<li>Removed istio sidecar from hermes</li>
+<li>Added authorizationpolicy to allow Sensa access to Kubeflow</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.5 Release Notes (2024-04-08)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>hades has been updated to v4.3.0</li>
+<li>hermes, styx, sensajs, web, and zeus have been updated to v4.3.2</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.4 Release Notes (2024-03-20)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>hermes, styx, sensajs, web, and zeus have been updated to v4.3.1</li>
+</ul>
+<h1>Sensa Helm Chart 1.5.2 Release Notes (2024-03-14)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Changed postgresql.array-mapping to AS_ARRAY</li>
+<li>Fixed a typo in the statefulset in the mino configuration</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hermes, hive-metastore, hyperkube, styx, sensajs, trino-coordinator, web, and zeus have been updated to v4.3.0</li>
+</ul>
+<h1>Sensa Helm Chart 1.4.9 Release Notes (2024-02-06)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>postgresql.array-mapping=AS_JSON added to trino postgresql catalog</li>
+<li>unsupported-type-handling=CONVERT_TO_VARCHAR added to trino postgresql catalog</li>
+</ul>
+<h1>Sensa Helm Chart 1.4.7 Release Notes (2024-01-30)</h1>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>wlm has been set to install by default</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>wlm has been updated to v1.0.0-a4</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>fluent-bit has been added as a separate chart</li>
+</ul>
+<h1>Sensa Helm Chart 1.4.5 Release Notes (2023-12-12)</h1>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>SENSAJS_INGRESS_HOST added to global values to accommodate sensajs integrations</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>trino-coordinator has been updated to v4.2.0</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>sensajs added for NetReveal integrations</li>
+</ul>
+<h1>Sensa Helm Chart 1.4.4 Release Notes (2023-12-07)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Added STYX_CONCURRENT_BATCH_LIMIT to better control styx throughput</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hades has been updated to v4.2.1</li>
+<li>hermes, hive-metastore, styx, web, and zeus have been updated to v4.2.0</li>
+<li>hyperkube has been updated to v4.2.9</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>Added logic to handle a null value for SENSA_RABBIT_MQ_DEFAULT_QUEUE</li>
+</ul>
+<h1>Sensa Helm Chart 1.4.2 Release Notes (2023-11-09)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>hyperkube has been updated to v4.2.8</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>Fixed hooks to accommodate Sensa being installed in namespaces other than sensa</li>
+</ul>
+<h1>Sensa Helm Chart 1.4.1 Release Notes (2023-10-31)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Updated postgres max connections limit to 500</li>
+<li>Added variable to allow setting custom user name for minio user</li>
+<li>Added variable to allow setting a bucket to designate for backups in minio</li>
+<li>Changed global password to be used only for user-exposed services (minio, trino, prometheus, API)</li>
+<li>Added new SENSA_SERVICES_PASSWORD to be used for inner-service communication</li>
+<li>Moved hive-metastore configmap to secret to accommodate change to SENSA_SERVICES_PASSWORD</li>
+<li>Cleaned up hooks and moved hook commands from yaml stringData to script files</li>
+<li>Changed hyperkube image repository to variable pulled from values.yaml</li>
+<li>Fixed hook-delete-policy to prevent errors during upgrades after a failed upgrade</li>
+<li>Added additional error handling in post-install hooks to prevent hanging jobs</li>
+<li>Moved all sensa-hooks containers to use hyperkube</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hyperkube has been updated to v4.2.6</li>
+<li>web has been updated to v4.1.1</li>
+<li>zeus has been updated to v4.1.3</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>Added the ability to change the global password via helm upgrade</li>
+<li>Added hooks to update internal service passwords for installations that had all services using global password</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.37 Release Notes (2023-10-18)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>zeus has been updated to v4.1.2</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.36 Release Notes (2023-10-13)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Fixed trino-worker resource limits and requests</li>
+<li>Updated redis master configuration to allow flushing cache</li>
+<li>Increased SENSA_BATCH_SIZE to 100000</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hive-metastore has been updated to v4.1.0</li>
+<li>styx has been updated to v4.1.4</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.30 Release Notes (2023-10-04)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Added SENSA_BATCH_SIZE environment variable to styx</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>styx has been updated to v4.1.3</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.29 Release Notes (2023-09-18)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Changed redis to not persist data to disk and removed the redis PVCs</li>
+<li>Changed hades environment variable from SENSA_API_KEY to SENSA_API_KEY_SECRET</li>
+<li>Added CPU requests to trino-worker configuration</li>
+<li>Added environment variables to styx for use with Sentry and RabbitMQ</li>
+<li>Added environment variables to hades, hermes, styx, and zeus for redis indexes</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>pre-upgrade hook has had hyperkube image updated to v4.1.0</li>
+<li>hades has been updated to v4.1.3</li>
+<li>hermes has been updated to v4.1.0</li>
+<li>kafka has been updated to 3.5.0-debian-11-r21</li>
+<li>kube-prometheus has been updated to 2.46.0-debian-11-r5</li>
+<li>minio has been updated to 2023.7.18-debian-11-r0</li>
+<li>postgres has been updated to 15.3.0-debian-11-r24</li>
+<li>redis has been updated to 7.0.12-debian-11-r2</li>
+<li>styx has been updated to v4.1.1</li>
+<li>trino-coordinator, web, and zeus have been updated to v4.1.0</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>Added post-upgrade hook to restart services in correct order after service upgrades</li>
+<li>Updated pre-upgrade hook to fix issue with switching redis to not persist data</li>
+<li>Added post-install hook to ensure services are started in the correct order</li>
+<li>Added WLM service version v1.0.0-a3 for processing SWIFT messages</li>
+<li>Added RabbitMQ service version 3.12.4-debian-11-r0</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.27 Release Notes (2023-08-24)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>service user and access control list added to datalake configuration</li>
+<li>insert.non-transactional-insert.enabled added to trino postgresql catalog</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>trino has been updated to 422</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.24 Release Notes (2023-08-11)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>styx URL added to global values</li>
+<li>styx environment variable added to API</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hades has been updated to v4.0.0</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>styx added for datalake integrations</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.19 Release Notes (2023-07-27)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Added tag to allow bypassing kube-prometheus install</li>
+<li>Increase max_connections in postgres</li>
+<li>Increase hive.max-partitions-per-writers setting in trino</li>
+<li>Updated trino worker configurations to optimize performance</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hermes, web, and zeus have been updated to v4.0.0</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>Setup JWT tokens to auto-generate on install and use existing values on upgrade</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.17 Release Notes (2023-06-14)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Added readinessProbe initialDelaySeconds to trino-coordinator and trino-worker</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.15 Release Notes (2023-06-02)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Changed trino catalog minio connector to use MICROSECONDS</li>
+<li>Updated trino java memory settings</li>
+<li>Updated trino autoscaling template to use v2</li>
+<li>Changed trino catalog from configmap to secret</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.13 Release Notes (2023-05-25)</h1>
+<h2>Significant Changes</h2>
+<h3>Images have been updated</h3>
+<ul>
+<li>meilisearch has been updated to v1.0.2</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.12 Release Notes (2023-03-28)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>Added istio sidecar to hermes</li>
+<li>Added authorizationpolicy and destinationrule to allow traffic between hermes and Kubeflow</li>
+<li>Change trino configmap to replace deprecated value</li>
+<li>Added templates to create tokens for service accounts</li>
+<li>Added postgres catalog to trino</li>
+<li>Change services to use internal API URL</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hermes has been updated to v3.0.3</li>
+<li>post-install hook image for create-minio-policy-and-user has been changed to 2023.1.31-debian-11-r0</li>
+<li>trino has been updated to version 409</li>
+<li>web and zeus images have been updated to 3.1.0</li>
+</ul>
+<h3>New features</h3>
+<ul>
+<li>Added authentication to prometheus ingress</li>
+</ul>
+<h1>Sensa Helm Chart 1.3.4 Release Notes (2023-02-15)</h1>
+<h2>Significant Changes</h2>
+<h3>Configurations added and updated</h3>
+<ul>
+<li>change trino configmap-catalog to use variables for minio user</li>
+</ul>
+<h3>Images have been updated</h3>
+<ul>
+<li>hades has been updated to v3.0.4</li>
+<li>hermes has been updated to v3.0.2</li>
+<li>kafka has been updated to 3.3.2-debian-11-r0</li>
+<li>kube-prometheus has been updated to 0.61.1-debian-11-r9</li>
+<li>meillisearch has been updated to v0.30.5</li>
+<li>minio has been updated to 2023.1.31-debian-11-r0</li>
+<li>postgres has been updated to 15.1.0-debian-11-r30</li>
+<li>redis has been updated to 7.0.8-debian-11-r0</li>
+<li>trino has been updated to version 405</li>
+<li>web and zeus have been updated to v3.0.0</li>
+<li>Moved trino-coordinator and hive-metastore to separate dockerhub repos</li>
+</ul>
+<h2>New features</h2>
+<ul>
+<li>pre-upgrade hook added to cleanup old service and deployment names</li>
+<li>post-install hook added to create initial Sensa admin, minio user, and minio bucket</li>
+<li>Moved creation of datalake user's password into trino template using password from global-values.yaml</li>
+<li>Expose prometheus endpoint via ingress</li>
+</ul>

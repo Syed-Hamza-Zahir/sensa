@@ -1,0 +1,86 @@
+apiVersion: v2
+name: sensa
+description: A Helm chart for installing Sensa
+icon: https://helm.symphonyfs.net/symphonyai_sensa_netreveal_logo.jpg
+type: application
+version: 1.5.26
+appVersion: "4.6.0"
+
+dependencies:
+# You can get/check versions for non-Sensa charts here: https://artifacthub.io
+
+# rules engine
+- name: hades
+  version: 0.1.27
+  repository: file://./charts/hades
+
+- name: hermes
+  version: 0.0.25
+  repository: file://./charts/hermes
+
+- name: hive-metastore
+  version: 0.2.3
+  repository: file://./charts/hive-metastore
+
+- name: kafka
+  version: 23.0.5
+  repository: https://charts.bitnami.com/bitnami
+
+- name: kube-prometheus
+  version: 8.16.2
+  repository: https://charts.bitnami.com/bitnami
+  tags:
+    - prometheus-install
+
+- name: meilisearch
+  version: 0.4.3
+  repository: https://factly.github.io/helm-charts
+
+- name: minio
+  version: 12.6.10
+  repository: https://charts.bitnami.com/bitnami
+
+- name: postgresql
+  version: 12.6.7
+  repository: https://charts.bitnami.com/bitnami
+
+- name: rabbitmq
+  version: 12.0.13
+  repository: https://charts.bitnami.com/bitnami
+
+- name: redis
+  version: 17.13.2
+  repository: https://charts.bitnami.com/bitnami
+
+- name: sensa-hooks
+  version: 0.1.9
+  repository: file://./charts/sensa-hooks
+
+- name: sensa-ingress
+  version: 0.2.0
+  repository: file://./charts/sensa-ingress
+
+- name: sensa-secrets
+  version: 0.2.5
+  repository: file://./charts/sensa-secrets
+
+- name: styx
+  version: 1.0.16
+  repository: file://./charts/styx
+
+- name: trino
+  version: 0.0.36
+  repository: file://./charts/trino
+
+- name: web
+  version: 0.1.46
+  repository: file://./charts/web
+
+- name: wlm
+  version: 0.0.1
+  repository: file://./charts/wlm
+
+# sensa-api
+- name: zeus
+  version: 0.1.55
+  repository: file://./charts/zeus

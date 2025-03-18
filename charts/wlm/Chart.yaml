@@ -1,0 +1,8 @@
+apiVersion: v2
+name: wlm
+description: A Helm chart for installing Sensa
+icon: https://helm.symphonyfs.net/symphonyai_sensa_netreveal_logo.jpg
+type: application
+version: 0.0.1
+appVersion: "1.0.0"
+

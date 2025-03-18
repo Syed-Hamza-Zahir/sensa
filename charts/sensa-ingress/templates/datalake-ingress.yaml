@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  name: datalake-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.global.DATALAKE_INGRESS_HOST }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: trino
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - {{ .Values.global.DATALAKE_INGRESS_HOST }}
+    secretName: https-certs

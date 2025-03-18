@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hades.fullname" . }}
+  labels:
+    {{- include "hades.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - nodePort: {{ .Values.service.nodePort }}
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
+      name: hades
+  selector:
+    {{- include "hades.selectorLabels" . | nindent 4 }}

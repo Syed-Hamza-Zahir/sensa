@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "wlm.fullname" . }}-entrypoint
+  labels:
+    app.kubernetes.io/name: {{ include "wlm.name" . }}
+    {{- include "wlm.labels" . | nindent 4 }}
+data:
+  entrypoint.sh: |-
+{{ .Files.Get "files/entrypoint.sh" | indent 4 }}
+

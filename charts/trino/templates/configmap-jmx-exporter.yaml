@@ -1,0 +1,25 @@
+{{- if .Values.jmx.exporter.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "trino.fullname" . }}-jmx-exporter-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "trino.labels" . | nindent 4 }}
+    app.kubernetes.io/component: jmx
+data:
+  jmx-exporter-config.yaml: |-
+    startDelaySeconds: 0
+    ssl: false
+    lowercaseOutputName: false
+    lowercaseOutputLabelNames: false
+    includeObjectNames: ["java.lang:type=Threading"]
+    autoExcludeObjectNameAttributes: true
+    hostPort: "127.0.0.1:{{ .Values.service.port }}"
+    excludeObjectNameAttributes:
+      "java.lang:type=OperatingSystem":
+        - "ObjectName"
+      "java.lang:type=Runtime":
+        - "ClassPath"
+        - "SystemProperties"
+{{- end }}

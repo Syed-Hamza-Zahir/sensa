@@ -1,0 +1,45 @@
+# Default values for wlm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: symphonyfs.azurecr.io/symphonysensa/wlm
+  pullPolicy: Always
+  tag: "master"
+
+nameOverride: ""
+fullnameOverride: ""
+
+imagePullSecrets:
+  - name: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8083
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

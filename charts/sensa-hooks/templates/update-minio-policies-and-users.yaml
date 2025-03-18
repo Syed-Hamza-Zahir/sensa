@@ -1,0 +1,74 @@
+{{- $secretObjOld := (lookup "v1" "Secret" .Release.Namespace .Values.tempSecrets) | default dict }}
+{{- $secretDataOld := (get $secretObjOld "data") | default dict }}
+{{- $userPasswordOld := (get $secretDataOld "SENSA_USER_PASSWORD" | b64dec) }}
+{{- if ne $userPasswordOld .Values.global.PASSWORD }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: update-minio-policies-and-users
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  ttlSecondsAfterFinished: 10
+  template:
+    metadata:
+      name: update-minio-policies-and-users
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      containers:
+        - name: update-minio-policies-and-users
+          image: "{{ .Values.hyperkubeRepository }}:{{ .Values.hyperkubeTag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          env:
+            - name: SENSA_SERVICES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_SERVICES_PASSWORD
+            - name: SENSA_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_USER_PASSWORD
+            - name: MINIO_BACKUP_FOLDER
+              value: "{{ .Values.global.MINIO_BACKUP_FOLDER }}"
+            - name: MINIO_UPLOAD_USER
+              value: "{{ .Values.global.MINIO_UPLOAD_USER }}"
+          volumeMounts:
+            - name: sensasecrets-volume
+              mountPath: /sensasecrets-volume
+          command:
+          - /bin/bash
+          - /scripts/update-minio-policies-and-users.sh
+      volumes:
+        - name: sensasecrets-volume
+          secret:
+            secretName: sensa-global-secrets
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,118 @@
+{{- $root := . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hades.fullname" . }}
+  labels:
+    {{- include "hades.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "hades.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "hades.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hades.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.SecurityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          {{- if .Values.global.internal_ca }}
+          - mountPath: /usr/local/share/ca-certificates
+            name: internalca-volume
+          {{- end }}    
+          - name: sensasecrets-volume
+            mountPath: /sensasecrets-volume
+          ports:
+            - name: hades
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          {{- if .Values.global.internal_ca }}
+            - name: REQUESTS_CA_BUNDLE
+              value: /usr/local/share/ca-certificates/root.pem
+          {{- end }}
+          {{- if .Values.global.proxy_server }}
+            - name: HTTPS_PROXY
+              value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+            - name: https_proxy
+              value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+            - name: NO_PROXY
+              value: .cluster.local
+            - name: no_proxy
+              value: .cluster.local
+          {{- end }}
+            - name: SENSA_SCHEDULE_CRON
+              value: "0 0 */1 * *"
+            - name: SENSA_TRINO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_TRINO_URL
+            - name: SENSA_API_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_API_KEY_SECRET
+            - name: SENSA_API_URL
+              value: {{ .Values.global.SENSA_API_URL }}
+            - name: SENSA_EMAIL
+              value: {{ .Values.global.SENSA_EMAIL }}
+            - name: SENSA_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_REDIS_URL
+            - name: SENSA_S3_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_S3_URL
+            - name: SENSA_KAFKA_BOOTSTRAP
+              value: {{ .Values.global.SENSA_KAFKA_URL }}
+            - name: AYASDI_SENTRY_DSN
+              value: {{ .Values.global.AYASDI_SENTRY_DSN }}
+            - name: SENSA_REDIS_INDEX
+              value: "{{ .Values.global.REDIS_INDEX_HADES }}"
+      volumes:
+      {{- if .Values.global.internal_ca }}
+      - name: internalca-volume
+        configMap:
+          name: internalca-certs
+      {{- end }}      
+      - name: sensasecrets-volume
+        secret:
+          secretName: sensa-global-secrets
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+

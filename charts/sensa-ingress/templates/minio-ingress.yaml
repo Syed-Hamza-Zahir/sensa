@@ -1,0 +1,25 @@
+{{- $root := . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: "nginx"
+  tls:
+  - hosts:
+    - {{ .Values.global.MINIO_INGRESS_HOST }}
+    secretName: {{ .Values.global.SSL_SECRETS }}
+  rules:
+  - host: {{ .Values.global.MINIO_INGRESS_HOST }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: minio
+            port:
+              number: 9000

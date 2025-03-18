@@ -1,0 +1,284 @@
+# These values override the defaults in all the charts.
+
+tags:
+  prometheus-install: true
+
+hades:
+  fullnameOverride: "hades"
+  image:
+    tag: "v4.3.2"
+  imagePullSecrets:
+    - name: "regcred"
+
+hermes:
+  fullnameOverride: "hermes"
+  image:
+    tag: "v4.3.2"
+  imagePullSecrets:
+    - name: "regcred"
+
+hive-metastore:
+  fullnameOverride: "hive-metastore"
+  image:
+    tag: "v4.5.0"
+  imagePullSecrets:
+    - name: "regcred"
+
+kafka:
+  fullnameOverride: "broker"
+  kraft:
+    enabled: false
+  zookeeper:
+    enabled: true
+  metrics:
+    jmx:
+      enabled: true
+    kafka:
+      enabled: true
+
+kube-prometheus:
+  fullnameOverride: "prometheus"
+  prometheus:
+    additionalScrapeConfigs:
+      enabled: true
+      type: internal
+      internal:
+        jobList:
+        - job_name: redis-collector
+          static_configs:
+            - targets: ['redis-metrics:9121']
+        - job_name: kafka-metrics
+          static_configs:
+            - targets: ['broker-metrics:9308']
+        - job_name: kafka-jmx-metrics
+          static_configs:
+            - targets: ['broker-jmx-metrics:5556']
+        - job_name: postgres-metrics
+          static_configs:
+            - targets: ['postgres-metrics:9187']
+        - job_name: rabbitmq-metrics
+          static_configs:
+            - targets: ['rabbitmq:9419']
+        - job_name: hive-metrics
+          static_configs:
+            - targets: ['hive-metastore:9084']
+        - job_name: minio-job
+          metrics_path: /minio/v2/metrics/cluster
+          scheme: http
+          static_configs:
+            - targets: ['minio:9000']
+        - job_name: hermes
+          metrics_path: /metrics
+          scheme: http
+          static_configs:
+            - targets: ['hermes:5004']
+        - job_name: hades
+          metrics_path: /metrics
+          scheme: http
+          static_configs:
+            - targets: ['hades:5003']
+        - job_name: trino
+          metrics_path: /metrics
+          scheme: http
+          static_configs:
+            - targets: ['trino:5556']
+  kube-state-metrics:
+    rbac:
+      pspEnabled: false
+  node-exporter:
+    rbac:
+      pspEnabled: false
+  rbac:
+    pspEnabled: false
+
+meilisearch:
+  fullnameOverride: "meilisearch"
+  image:
+    tag: "v1.10.3"
+  persistence:
+    mountPath: /meili_data
+
+minio:
+  fullnameOverride: "minio"
+  mode: distributed
+  auth:
+    existingSecret: "minio-creds"
+  persistence:
+    size: 500Gi
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/minio/v2/metrics/cluster"
+    prometheus.io/port: "9000"
+
+postgresql:
+  fullnameOverride: "postgres"
+  global:
+    postgresql:
+      auth:
+        username: "ayasdi"
+        database: "ayasdi"
+        existingSecret: "postgres-creds"
+  metrics:
+    enabled: true
+  primary:
+    persistence:
+      size: 100Gi
+    extendedConfiguration: |
+            max_connections = 500
+
+rabbitmq:
+  fullnameOverride: "rabbitmq"
+  auth:
+    existingPasswordSecret: "rabbitmq-creds"
+    existingErlangSecret: "rabbitmq-creds"
+  metrics:
+    enabled: true
+  persistence:
+    size: 8Gi
+
+redis:
+  fullnameOverride: "redis"
+  auth:
+    existingSecret: "redis-creds"
+    existingSecretPasswordKey: "password"
+  commonConfiguration: |-
+    appendonly no
+    save ""
+  metrics:
+    enabled: true
+  master:
+    disableCommands:
+    - FLUSHALL
+
+sensa-hooks:
+  hyperkubeTag: "v4.5.9"
+  imagePullSecrets:
+    - name: "regcred"
+  sensaSecrets: "sensa-global-secrets"
+  tempSecrets: "sensa-temp-secrets"
+
+sensa-secrets:
+  fluentSecret: "fluent-creds"
+  hiveSecret: "hive-config"
+  minioSecret: "minio-creds"
+  postgresSecret: "postgres-creds"
+  prometheusSecret: "prometheus-ingress-creds"
+  rabbitmqSecret: "rabbitmq-creds"
+  redisSecret: "redis-creds"
+  sensaSecrets: "sensa-global-secrets"
+  tempSecrets: "sensa-temp-secrets"
+  trinoSecret: "trino-creds"
+
+styx:
+  fullnameOverride: "styx"
+  image:
+    tag: "v4.6.0"
+  imagePullSecrets:
+    - name: "regcred"
+
+trino:
+  fullnameOverride: "trino"
+  accessControl:
+    type: configmap
+    refreshPeriod: 10s
+  additionalConfigProperties:
+    - http-server.process-forwarded=true
+    - http-server.authentication.type=PASSWORD
+    - internal-communication.shared-secret=trino-creds
+  server:
+    workers: 6
+    config:
+      authenticationType: "PASSWORD"
+      query:
+        maxMemory: "300GB"
+        maxMemoryPerNode: "20GB"
+      memory:
+        heapHeadroomPerNode: "4GB"
+  coordinator:
+    image:
+      tag: "462"
+    jvm:
+      maxHeapSize: "25G"
+  worker:
+    image:
+      tag: "462"
+    jvm:
+      maxHeapSize: "25G"
+    resources:
+      requests:
+        cpu: "6000m"
+      limits:
+        memory: "30Gi"
+        cpu: "6000m"
+  jmx:
+    enabled: true
+    exporter:
+      enabled: true
+      image: bitnami/jmx-exporter:1.0.1-debian-12-r3
+  serviceMonitor:
+    enabled: true
+  auth:
+    passwordAuth: ""
+  secretMount:
+    - trino-creds
+
+web:
+  fullnameOverride: "web"
+  image:
+    tag: "v4.6.0"
+  imagePullSecrets:
+    - name: "regcred"
+
+wlm:
+  fullnameOverride: "wlm"
+  image:
+    tag: "v1.0.0-a4"
+  imagePullSecrets:
+    - name: "regcred"
+
+zeus:
+  fullnameOverride: "zeus"
+  image:
+    tag: "v4.6.0"
+  imagePullSecrets:
+    - name: "regcred"
+
+global:
+  AYASDI_SENTRY_DSN: ""
+  AYASDI_SENTRY_SAMPLE_RATE: ""
+  DATALAKE_USER: "sensa"
+  DATALAKE_SERVICE_USER: "service"
+  DB_TYPE: "postgres"
+  DB_PORT: "5432"
+  DB_USER: "ayasdi"
+  HIVE_USER: "hive"
+  HERMES_FILE_SCAN_FREQUENCY_MINUTES: 1
+  MINIO_BACKUP_FOLDER: "backups"
+  MINIO_UPLOAD_USER: "landing"
+  MINIO_USER: "minio"
+  NODE_ENV: "production"
+  PIPELINE_FAMILIES_BUCKET: "pipeline-families"
+  PIPELINE_DISCOVERY_BUCKET: "pipeline-landing-zone"
+  REDIS_INDEX_API: 1
+  REDIS_INDEX_HADES: 2
+  REDIS_INDEX_HERMES: 3
+  REDIS_INDEX_STYX: 4
+  SENSA_API_DOCS: false
+  SENSA_API_URL: "http://zeus:3001"
+  SENSA_BATCH_SIZE: 100000
+  SENSA_EMAIL: "service@ayasdi.io"
+  SENSA_HERMES_URL: "http://hermes:5004"
+  SENSA_KAFKA_URL: "broker:9092"
+  SENSA_KUBEFLOW_URL: "http://ml-pipeline-ui.kubeflow.svc.cluster.local:80"
+  SENSA_LOADER_URL: "http://atlas:5000"
+  SENSA_PROMETHEUS_URL: "http://prometheus:9090"
+  SENSA_RABBIT_MQ_STYX_QUEUE: ""
+  SENSA_RULE_ENGINE_URL: "http://hades:5003"
+  SENSA_SEARCH_URL: "http://meilisearch:7700"
+  SENSA_STYX_URL: "http://styx:3007"
+  SSL_SECRETS: "https-certs"
+  STYX_BUCKET_NAME: "config"
+  STYX_OBJECT_NAME: "mappings.yml"
+  STYX_CONCURRENT_BATCH_LIMIT: 4
+  sslPort: 443
+  KFsslPort: 443

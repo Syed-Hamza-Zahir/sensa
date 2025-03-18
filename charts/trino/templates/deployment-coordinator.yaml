@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "trino.fullname" . }}-coordinator
+  labels:
+    app: {{ template "trino.name" . }}
+    chart: {{ template "trino.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: coordinator
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "trino.name" . }}
+      release: {{ .Release.Name }}
+      component: coordinator
+  template:
+    metadata:
+      labels:
+        app: {{ template "trino.name" . }}
+        release: {{ .Release.Name }}
+        component: coordinator
+    spec:
+      serviceAccountName: {{ include "trino.serviceAccountName" . }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        runAsUser: {{ .runAsUser }}
+        runAsGroup: {{ .runAsGroup }}
+      {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "trino.fullname" . }}-coordinator
+        - name: catalog-volume
+          secret:
+            secretName: {{ template "trino.catalog" . }}
+        {{- if .Values.accessControl }}{{- if eq .Values.accessControl.type "configmap" }}
+        - name: access-control-volume
+          configMap:
+            name: trino-access-control-volume-coordinator
+        {{- end }}{{- end }}
+        {{- if eq .Values.server.config.authenticationType "PASSWORD" }}
+        - name: trino-creds-volume
+          secret:
+            secretName: trino-creds
+        {{- end }}
+        {{- if .Values.jmx.exporter.enabled }}
+        - name: jmx-exporter-config-volume
+          configMap:
+            name: {{ template "trino.fullname" . }}-jmx-exporter-config
+        {{- end }}
+      {{- if .Values.initContainers.coordinator }}
+      initContainers:
+      {{-  tpl (toYaml .Values.initContainers.coordinator) . | nindent 6 }}
+      {{- end }}
+        {{- range .Values.secretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}-coordinator
+          image: "{{ .Values.coordinator.image.repository }}:{{ .Values.coordinator.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.coordinator.image.pullPolicy }}
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ .Values.server.config.path }}
+              name: config-volume
+            - mountPath: {{ .Values.server.config.path }}/catalog
+              name: catalog-volume
+            {{- if .Values.accessControl }}{{- if eq .Values.accessControl.type "configmap" }}
+            - mountPath: {{ .Values.server.config.path }}/access-control
+              name: access-control-volume
+            {{- end }}{{- end }}
+            {{- range .Values.secretMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .path }}
+            {{- end }}
+            {{- if eq .Values.server.config.authenticationType "PASSWORD" }}
+            - mountPath: {{ .Values.server.config.path }}/auth
+              name: trino-creds-volume
+            {{- end }}   
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            {{- if .Values.jmx.enabled }}
+            - name: jmx-server
+              containerPort: {{ .Values.jmx.serverPort }}
+              protocol: TCP
+            - name: jmx-registry
+              containerPort: {{ .Values.jmx.registryPort }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.jmx.exporter.enabled }}
+            - name: jmx-exporter
+              containerPort: {{ .Values.jmx.exporter.port }}
+              protocol: TCP
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /v1/info
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /v1/info
+              port: http
+            initialDelaySeconds: 10
+          resources:
+            {{- toYaml .Values.coordinator.resources | nindent 12 }}
+      {{- if .Values.jmx.exporter.enabled }}
+        - name: jmx-exporter
+          image: {{ .Values.jmx.exporter.image }}
+          imagePullPolicy: {{ .Values.jmx.exporter.pullPolicy }}
+          args:
+            - "{{ .Values.jmx.exporter.port }}"
+            - /etc/jmx-exporter/jmx-exporter-config.yaml
+          volumeMounts:
+            - mountPath: /etc/jmx-exporter/
+              name: jmx-exporter-config-volume
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

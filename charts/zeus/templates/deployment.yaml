@@ -1,0 +1,153 @@
+{{- $root := . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zeus.fullname" . }}
+  labels:
+    {{- include "zeus.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "zeus.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "zeus.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "zeus.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.SecurityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          {{- if .Values.global.internal_ca }}
+            - name: internalca-volume
+              mountPath: /usr/local/share/ca-certificates
+          {{- end }}
+            - name: sensasecrets-volume
+              mountPath: /sensasecrets-volume
+          ports:
+            - name: zeus
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          {{- if .Values.global.internal_ca}}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /usr/local/share/ca-certificates/root.pem
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
+          {{- end }}
+          {{- if .Values.global.proxy_server }}
+            - name: HTTPS_PROXY
+              value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+            - name: https_proxy
+              value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+            - name: NO_PROXY
+              value: .cluster.local
+            - name: no_proxy
+              value: .cluster.local
+          {{- end }}
+            - name: SENSA_REDIS_INDEX
+              value: "{{ .Values.global.REDIS_INDEX_API }}"
+            - name: SENSA_RULE_ENGINE_URL
+              value: {{ .Values.global.SENSA_RULE_ENGINE_URL }}
+            - name: SENSA_API_DOCS
+              value: "{{ .Values.global.SENSA_API_DOCS }}"
+            - name: SENSA_API_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_API_KEY_SECRET
+            - name: SENSA_API_URL
+              value: {{ .Values.global.SENSA_API_URL }}
+            - name: SENSA_TRINO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_TRINO_URL
+            - name: SENSA_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_DB_URL
+            - name: SENSA_ENCRYPTION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_ENCRYPTION_SECRET
+            - name: SENSA_JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_JWT_ACCESS_SECRET
+            - name: SENSA_JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_JWT_REFRESH_SECRET
+            - name: SENSA_KAFKA_URL
+              value: {{ .Values.global.SENSA_KAFKA_URL }}
+            - name: SENSA_KUBEFLOW_URL
+              value: https://{{ .Values.global.KUBEFLOW_INGRESS_HOST }}:{{ .Values.global.KFsslPort }}
+            - name: SENSA_LOADER_URL
+              value: {{ .Values.global.SENSA_LOADER_URL }}
+            - name: SENSA_PROMETHEUS_URL
+              value: {{ .Values.global.SENSA_PROMETHEUS_URL }}
+            - name: SENSA_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_REDIS_URL
+            - name: SENSA_S3_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sensa-global-secrets
+                  key: SENSA_S3_URL
+            - name: SENSA_WEB_URL
+              value: https://{{ .Values.global.SENSA_WEB_HOST }}:{{ .Values.global.sslPort }}
+            - name: SENSA_SEARCH_URL
+              value: {{ .Values.global.SENSA_SEARCH_URL }}
+            - name: SENSA_HERMES_URL
+              value: {{ .Values.global.SENSA_HERMES_URL }}
+            - name: SENSA_STYX_URL
+              value: {{ .Values.global.SENSA_STYX_URL }}
+            - name: NODE_ENV
+              value: {{ .Values.global.NODE_ENV }}
+      volumes:
+      {{- if .Values.global.internal_ca }}
+        - name: internalca-volume
+          configMap:
+            name: internalca-certs
+      {{- end }}
+        - name: sensasecrets-volume
+          secret:
+            secretName: sensa-global-secrets
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

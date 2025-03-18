@@ -1,0 +1,7 @@
+apiVersion: v2
+name: styx
+description: A Helm chart for installing Sensa
+icon: https://helm.symphonyfs.net/symphonyai_sensa_netreveal_logo.jpg
+type: application
+version: 1.0.16
+appVersion: "4.6.0"

@@ -1,0 +1,146 @@
+{{- $root := . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hermes.fullname" . }}
+  labels:
+    {{- include "hermes.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "hermes.selectorLabels" . | nindent 6 }}
+  strategy: {}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "hermes.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "hermes.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - env:
+      {{- if .Values.global.internal_ca }}
+        - name: REQUESTS_CA_BUNDLE
+          value: /usr/local/share/ca-certificates/root.pem
+      {{- end }}
+      {{- if .Values.global.proxy_server }}
+        - name: HTTPS_PROXY
+          value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+        - name: https_proxy
+          value: http://{{ .Values.global.proxy_server }}:{{ .Values.global.proxy_port }}
+        - name: NO_PROXY
+          value: .cluster.local
+        - name: no_proxy
+          value: .cluster.local
+      {{- end }}
+        - name: SENSA_REDIS_INDEX
+          value: "{{ .Values.global.REDIS_INDEX_HERMES }}"
+        - name: KF_PIPELINES_SA_TOKEN_PATH
+          value: /var/run/secrets/kubeflow/pipelines/token
+        - name: PIPELINE_FAMILIES_BUCKET
+          value: {{ .Values.global.PIPELINE_FAMILIES_BUCKET }}
+        - name: PIPELINE_DISCOVERY_BUCKET
+          value: {{ .Values.global.PIPELINE_DISCOVERY_BUCKET }}
+        - name: SENSA_RULE_ENGINE_URL
+          value: {{ .Values.global.SENSA_RULE_ENGINE_URL }}
+        - name: SENSA_TRINO_URL
+          valueFrom:
+            secretKeyRef:
+              key: SENSA_TRINO_URL
+              name: sensa-global-secrets
+        - name: SENSA_KUBEFLOW_HOST
+          value: {{ .Values.global.SENSA_KUBEFLOW_URL }}
+        - name: SCHEDULER_FREQUENCY_MINUTES
+          value: "{{ .Values.global.HERMES_FILE_SCAN_FREQUENCY_MINUTES }}"
+        - name: SENSA_API_KEY_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: SENSA_API_KEY_SECRET
+              name: sensa-global-secrets
+        - name: SENSA_EMAIL
+          value: {{ .Values.global.SENSA_EMAIL }}
+        - name: SENSA_API_URL
+          value: {{ .Values.global.SENSA_API_URL }}
+        - name: SENSA_KAFKA_URL
+          value: {{ .Values.global.SENSA_KAFKA_URL }}
+        - name: SENSA_REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              key: SENSA_REDIS_URL
+              name: sensa-global-secrets
+        - name: SENSA_S3_URL
+          valueFrom:
+            secretKeyRef:
+              key: SENSA_S3_URL
+              name: sensa-global-secrets
+        - name: SENSA_WEB_URL
+          value: https://{{ .Values.global.SENSA_WEB_HOST }}:{{ .Values.global.sslPort }}
+        - name: NODE_ENV
+          value: {{ .Values.global.NODE_ENV }}
+        image: '{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion
+          }}'
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ .Chart.Name }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          name: http
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        {{- if .Values.global.internal_ca }}
+        - mountPath: /usr/local/share/ca-certificates
+          name: internalca-volume
+        {{- end }}    
+        - mountPath: /sensasecrets-volume
+          name: sensasecrets-volume
+        - mountPath: /certs
+          name: https-certs
+        - mountPath: /var/run/secrets/kubeflow/pipelines
+          name: volume-kf-pipeline-token
+          readOnly: true
+      serviceAccountName: hermes
+      volumes:
+      {{- if .Values.global.internal_ca }}
+      - name: internalca-volume
+        configMap:
+          name: internalca-certs
+      {{- end }}      
+      - name: sensasecrets-volume
+        secret:
+          secretName: sensa-global-secrets
+      - name: https-certs
+        secret:
+          secretName: https-certs
+      - name: volume-kf-pipeline-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              audience: pipelines.kubeflow.org
+              expirationSeconds: 7200
+              path: token
+status: {}
+    {{- with .Values.nodeSelector }}
+    nodeSelector:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+    affinity:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+    tolerations:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}

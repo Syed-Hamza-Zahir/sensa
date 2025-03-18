@@ -1,0 +1,24 @@
+image:
+  repository: symphonyfs.azurecr.io/symphonysensa/hive-metastore
+  tag: "master"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: ""
+
+resources: {}
+conf:
+  hiveSite:
+    hive.metastore.uris: thrift://hive-metastore:9083
+extraEnvVars: []
+
+waitDb:
+  enabled: true
+  image:
+    repository: busybox
+    tag: latest
+    pullPolicy: IfNotPresent
+
+hiveMetastoreDb:
+  host: postgres
+  port: 5432
